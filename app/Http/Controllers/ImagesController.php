@@ -14,20 +14,35 @@ class ImagesController extends Controller
     }
     public function store(Request $request)
     {
+        // Valida que se haya enviado un archivo de imagen
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Establece las reglas de validación
+        ]);
+    
+        // Obtiene la instancia del archivo de imagen
         $image = $request->file('image');
-
-        $name = time() . '.' . $image->extension();
+    
+        // Genera un nombre único para la imagen basado en la marca de tiempo
+        $name = time() . '.' . $image->getClientOriginalExtension();
+    
+        // Define la ruta donde se almacenará la imagen en el sistema de archivos
         $path = 'storage/images/' . $name;
-
-        $image->move(public_path($path));
-
-        $image = new Image();
-        $image->name = $name;
-        $image->path = $path;
-        $image->save();
-
-        return redirect()->route('welcome');
+    
+        // Mueve la imagen al directorio de almacenamiento
+        $image->move(public_path('storage/images'), $name);
+    
+        // Crea una nueva instancia del modelo Image y asigna los valores
+        $newImage = new Image();
+        $newImage->name = $name;
+        $newImage->path = $path;
+        $newImage->save();
+    
+        // Redirecciona de nuevo a la página de inicio o a donde desees
+        return redirect()->route('welcome')->with('success', 'Imagen cargada correctamente.');
     }
+
+        
+    
 
     public function index()
     {
